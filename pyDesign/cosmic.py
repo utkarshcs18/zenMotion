@@ -2,115 +2,87 @@ import turtle
 import math
 import colorsys
 
+TURTLE_SPEED = 8
+
 screen = turtle.Screen()
 screen.setup(900, 900)
 screen.bgcolor("black")
 screen.title("Cosmic Mandala")
 screen.colormode(1.0)
-
-ANIM_BATCH = 12
-screen.tracer(ANIM_BATCH, 0)
+screen.tracer(1)               # animate every move
 
 t = turtle.Turtle()
-t.shape("turtle")         
-t.shapesize(1.2)
-t.color("white")
-t.showturtle()
-t.speed(0)
+t.shape("turtle")
+t.shapesize(1.3)
+t.speed(TURTLE_SPEED)
 
 
 def hsv(h, s=0.85, v=1.0):
     return colorsys.hsv_to_rgb(h % 1.0, s, v)
 
 
-def move(x, y):
+def go_to(x, y, heading=0):
     t.penup()
     t.goto(x, y)
+    t.setheading(heading)
     t.pendown()
 
 
-def spirograph(R=300, r=79, d=120, step=0.02):
-    k = (R - r) / r
-    total = 2 * math.pi * r         
+def star_web(length=400, turn=170, steps=36):
     t.width(1)
-    a = 0.0
-    first = True
-    while a <= total:
-        x = (R - r) * math.cos(a) + d * math.cos(k * a)
-        y = (R - r) * math.sin(a) - d * math.sin(k * a)
-        t.pencolor(hsv(a / total * 6, 0.7, 0.9))
-        if first:
-            move(x, y)
-            first = False
-        else:
-            t.goto(x, y)
-        a += step
-    t.penup()
-    screen.update()
+    go_to(-length / 2, -length / 3, 0)
+    for i in range(steps):
+        t.pencolor(hsv(i / steps))
+        t.fillcolor(hsv(i / steps))
+        t.forward(length)
+        t.left(turn)
 
 
 def circle_flower(count=36, radius=150):
     t.width(2)
+    go_to(0, 0, 0)
     for i in range(count):
-        t.pencolor(hsv(i / count))
-        t.penup()
-        t.goto(0, 0)
-        t.setheading(i * 360 / count)
-        t.pendown()
+        t.pencolor(hsv(i / count + 0.5))
+        t.fillcolor(hsv(i / count + 0.5))
         t.circle(radius)
-    t.penup()
-    screen.update()
+        t.left(360 / count)
 
 
 def star_polygon(n=13, m=5, radius=115):
-    pts = []
+    turn = m * 360 / n
+    edge = 2 * radius * math.sin(math.pi * m / n)
+    t.width(3)
+    go_to(0, radius, 90 + turn / 2 + 90)
     for i in range(n):
-        ang = math.radians(90 + i * 360 / n)
-        pts.append((radius * math.cos(ang), radius * math.sin(ang)))
-    t.width(2)
-    idx = 0
-    move(*pts[0])
-    for i in range(n + 1):
-        t.pencolor(hsv(i / n + 0.5, 0.3, 1.0))
-        t.goto(*pts[idx])
-        idx = (idx + m) % n
-
-    for i, (x, y) in enumerate(pts):
-        t.penup()
-        t.goto(x, y - 5)
-        t.pendown()
-        t.pencolor("white")
-        t.fillcolor(hsv(i / n))
-        t.begin_fill()
-        t.circle(5)
-        t.end_fill()
-    t.penup()
-    screen.update()
+        t.pencolor(hsv(i / n + 0.15, 0.3, 1.0))
+        t.fillcolor(hsv(i / n + 0.15, 0.3, 1.0))
+        t.forward(edge)
+        t.left(turn)
 
 
-def sunflower(dots=220, scale=5.2):
+def sunflower(dots=200, scale=5.2):
     golden = math.radians(137.50776)
     for n in range(1, dots + 1):
-        rad = scale * math.sqrt(n)
-        ang = n * golden
-        x, y = rad * math.cos(ang), rad * math.sin(ang)
+        r = scale * math.sqrt(n)
+        a = n * golden
+        c = hsv(n / dots * 0.9 + 0.05, 0.9, 1.0)
         t.penup()
-        t.goto(x, y - 2.5)
+        t.goto(r * math.cos(a), r * math.sin(a) - 3)
+        t.setheading(0)
         t.pendown()
-        t.pencolor(hsv(n / dots * 0.9 + 0.05, 0.9, 1.0))
-        t.fillcolor(hsv(n / dots * 0.9 + 0.05, 0.9, 1.0))
+        t.pencolor(c)
+        t.fillcolor(c)
         t.begin_fill()
         t.circle(2.5 + n / dots * 1.5)
         t.end_fill()
-    t.penup()
-    screen.update()
 
 
-spirograph()
+star_web()
 circle_flower()
 star_polygon()
 sunflower()
 
+t.penup()
+t.goto(0, 0)
 t.hideturtle()
-screen.update()
 turtle.done()
